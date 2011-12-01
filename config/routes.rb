@@ -1,4 +1,8 @@
 Fts::Application.routes.draw do
+  scope 'api' do
+    match '/:controller(/:action)'
+  end
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
