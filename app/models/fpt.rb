@@ -10,6 +10,7 @@
 #十指模型
 class NyzwIc < ActiveRecord::Base
   set_table_name "nyzw_ic"
+  set_primary_key :ryno
 end
 
 class NyzwFp < ActiveRecord::Base
