@@ -53,22 +53,47 @@ end
 #任务模型
 class BkTask < ActiveRecord::Base
   set_table_name "bk_task"
+  set_primary_key :task_id
 end
 
 class CcTask < ActiveRecord::Base
   set_table_name "cc_task"
+  set_primary_key :task_id
 end
 
 class DcTask < ActiveRecord::Base
   set_table_name "dc_task"
+  set_primary_key :task_id
 end
 
 class ZcTask < ActiveRecord::Base
   set_table_name "zc_task"
+  set_primary_key :task_id
 end
 
 class XcTask < ActiveRecord::Base
   set_table_name "xc_task"
+  set_primary_key :task_id
+end
+
+class Dict < ActiveRecord::Base
+  set_table_name "sys_dict"
+  def self.getDictByCode code
+     find(:all,:conditions=>["code=?",code])
+  end
+end
+
+class TbTask < ActiveRecord::Base
+  set_table_name "tb_task"
+  set_primary_key :tb_id
+end
+
+class TbTaskDest < ActiveRecord::Base
+  set_table_name "tb_task_dest"
+end
+
+class DdStdm < ActiveRecord::Base
+  set_table_name "dd_stdm"
 end
 
 
