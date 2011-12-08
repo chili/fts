@@ -6,6 +6,8 @@
 =end
 
 
+require 'rubygems'
+require 'composite_primary_keys'
 
 #十指模型
 class NyzwIc < ActiveRecord::Base
@@ -15,35 +17,44 @@ end
 
 class NyzwFp < ActiveRecord::Base
   set_table_name "nyzw_fp"
+  set_primary_keys :ryno, :fpno
+
 end
 
 class NyzwTx < ActiveRecord::Base
   set_table_name "nyzw_tx"
+  set_primary_keys :ryno, :fpno
 end
 
 class NyzwTzxx < ActiveRecord::Base
   set_table_name "nyzw_tzxx"
+  set_primary_keys :ryno, :fpno
 end
 
 class NyzwZdyxx < ActiveRecord::Base
   set_table_name "nyzw_zdyxx"
+  set_primary_keys :ryno, :fpno
 end
 
 #现场模型
 class XczwIc < ActiveRecord::Base
   set_table_name "xczw_ic"
+  set_primary_key :ajno
 end
 
 class XczwFp < ActiveRecord::Base
   set_table_name "xczw_fp"
+  set_primary_keys :ajno, :fpno
 end
 
 class XczwTx < ActiveRecord::Base
   set_table_name "xczw_tx"
+  set_primary_keys :ajno, :fpno
 end
 
 class XczwTzxx < ActiveRecord::Base
   set_table_name "xczw_tzxx"
+  set_primary_keys :ajno, :fpno
 end
 
 class XczwZdyxx < ActiveRecord::Base
@@ -95,6 +106,7 @@ end
 class DdStdm < ActiveRecord::Base
   set_table_name "dd_stdm"
 end
+
 
 
 

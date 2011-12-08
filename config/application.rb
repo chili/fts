@@ -46,5 +46,6 @@ module Fts
     config.assets.version = '1.0'
 
     config.workspace = "d:/temp"
+    config.gab = true
   end
 end

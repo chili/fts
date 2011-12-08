@@ -5,8 +5,10 @@ gem 'rails', '3.1.3'
 # Bundle edge Rails instead:
 # gem 'rails',     :git => 'git://github.com/rails/rails.git'
 
+gem 'composite_primary_keys'
 gem 'ruby-oci8'
 gem 'activerecord-oracle_enhanced-adapter'
+
 
 
 # Gems used only for assets and not required
