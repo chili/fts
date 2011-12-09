@@ -47,5 +47,8 @@ module Fts
 
     config.workspace = "d:/temp"
     config.gab = true
+    config.ftp_username="nmbu"
+    config.ftp_password="nmbu"
+    config.ftp_host="60.247.77.173"
   end
 end

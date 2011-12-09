@@ -1,5 +1,13 @@
 require "fileutils"
+require "net/ftp"
 load "#{Rails.root}/app/models/fpt.rb"
+def logger
+    @logger ||= ::Rails.logger
+    return @logger
+end
+#
+#打包发送文件和接受其他省厅的文件
+#
 class SendReceive
   def self.init
     Rails.configuration.workspace  = "#{Rails.root}/files"  if(Rails.configuration.workspace.nil?)
@@ -19,7 +27,23 @@ class SendReceive
       Dir.mkdir("#{$dir}/receive/01000",777) if !Dir.exists?"#{$dir}/receive/01000"
     end
   end
-  def self.make_waiting_info
+
+  def self.down_file
+    puts "connect ftp server"
+     begin
+      ftp = Net::FTP.new(Rails.configuration.ftp_host,Rails.configuration.ftp_username, Rails.configuration.ftp_password)
+      ftp.chdir('/')
+      server_files = ftp.ls("/").find_all{|i|i[0,10]=='drw-rw-rw-'}.map{|i|i.split(' ',9)[-1]} .each do|file|
+        puts file
+      end
+    rescue Exception => ex
+      puts ex
+    ensure
+      ftp.close
+    end
+  end
+
+  def self.send_file
     tbTask = TbTask.find(:all,:conditions=>"fmq=1",:order=>"priority")
     tbTask.each do|t|
       puts t.src,t.tb_type
@@ -73,6 +97,8 @@ class SendReceive
         FileUtils.cp "#{$dir}/temp/#{filename}","#{$dir}/send/01000/#{filename}"
       end
       FileUtils.rm "#{$dir}/temp/#{filename}"
+      #完成信息打包发送
+      t.fmq = '2'
     end
   end
 
@@ -103,16 +129,21 @@ class SendReceive
       case tbTask.tb_type
       when 0..4
         objects.each do|obj|
-          if (!obj.instance_of?NyzwTx) then
-
-            if(obj.kind_of?(ActiveRecord::Base)) then
-                ok = obj.save
-                puts "save #{obj},#{obj.errors.values},#{ok}"
-            end
+          clazz = obj.class
+          begin
+            exists = clazz.find(obj.id)
+            exists.attributes = obj.attributes
+            exists.save
+          rescue ActiveRecord::RecordNotFound
+            x = clazz.new
+            x.initialize_dup(obj)
+            x.id = obj.id
+            x.save
+          rescue Exception =>e
+             logger.error e
           end
         end
       end
-
     end
   end
 

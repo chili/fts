@@ -107,6 +107,10 @@ class DdStdm < ActiveRecord::Base
   set_table_name "dd_stdm"
 end
 
+class CfgSystem <ActiveRecord::Base
+   set_table_name "cfg_system"
+   set_primary_key :code
+end
 
 
 
