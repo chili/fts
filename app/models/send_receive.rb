@@ -10,37 +10,40 @@ end
 #
 class SendReceive
   def self.init
-    Rails.configuration.workspace  = "#{Rails.root}/files"  if(Rails.configuration.workspace.nil?)
-    $dir = Rails.configuration.workspace
-    puts "workspace is #{$dir}"
-    Dir.mkdir("#{$dir}",777) if !Dir.exists?"#{$dir}"
-    Dir.mkdir("#{$dir}/temp",777) if !Dir.exists?"#{$dir}/temp"
-    Dir.mkdir("#{$dir}/send",777) if !Dir.exists?"#{$dir}/send"
-    Dir.mkdir("#{$dir}/receive",777) if !Dir.exists?"#{$dir}/receive"
-    if(Rails.configuration.gab) then
+    $config = Rails.configuration
+    $w_dir = $config.workspace + "/#{$config.hostcode}" unless defined? $w_dir
+    puts "workspace is #{$w_dir}"
+    FileUtils.mkdir_p "#{$w_dir}/temp"  unless  Dir.exists?"#{$w_dir}/temp"
+    FileUtils.mkdir_p "#{$w_dir}/send"  unless  Dir.exists?"#{$w_dir}/send"
+    FileUtils.mkdir_p "#{$w_dir}/receive"  unless  Dir.exists?"#{$w_dir}/receive"
+    if($config.gab) then
       DdStdm.find(:all).each do|s|
-        Dir.mkdir("#{$dir}/send/#{s.code}",777) if !Dir.exists?"#{$dir}/send/#{s.code}"
-        Dir.mkdir("#{$dir}/receive/#{s.code}",777) if !Dir.exists?"#{$dir}/receive/#{s.code}"
+        Dir.mkdir("#{$w_dir}/send/#{s.code}",0)  unless Dir.exists?"#{$w_dir}/send/#{s.code}"
+        Dir.mkdir("#{$w_dir}/receive/#{s.code}",0) unless Dir.exists?"#{$w_dir}/receive/#{s.code}"
       end
     else
-      Dir.mkdir("#{$dir}/send/01000",777)  if !Dir.exists?"#{$dir}/send/01000"
-      Dir.mkdir("#{$dir}/receive/01000",777) if !Dir.exists?"#{$dir}/receive/01000"
+      Dir.mkdir("#{$w_dir}/send/010000",0)  unless Dir.exists?"#{$w_dir}/send/010000"
+      Dir.mkdir("#{$w_dir}/receive/010000",0) unless Dir.exists?"#{$w_dir}/receive/010000"
+    end
+  end
+
+  def self.remote_init
+    $rw_dir =  $config.remote_workspace
+    puts "remote workspace is #{$rw_dir}"
+    FileUtils.mkdir_p "#{$rw_dir}"  unless  Dir.exists?"#{$rw_dir}"
+    DdStdm.find(:all).each do|s|
+      FileUtils.mkdir_p("#{$rw_dir}/#{s.code}/send/010000")  unless Dir.exists?"#{$rw_dir}/#{s.code}/send/010000"
+      FileUtils.mkdir_p("#{$rw_dir}/#{s.code}/receive/010000") unless Dir.exists?"#{$rw_dir}/#{s.code}/receive/010000"
+      FileUtils.mkdir_p "#{$rw_dir}/010000/send/#{s.code}"  unless  Dir.exists?"#{$rw_dir}/010000/send/#{s.code}"
+      FileUtils.mkdir_p "#{$rw_dir}/010000/receive/#{s.code}"  unless  Dir.exists?"#{$rw_dir}/010000/receive/#{s.code}"
     end
   end
 
   def self.down_file
-    puts "connect ftp server"
-     begin
-      ftp = Net::FTP.new(Rails.configuration.ftp_host,Rails.configuration.ftp_username, Rails.configuration.ftp_password)
-      ftp.chdir('/')
-      server_files = ftp.ls("/").find_all{|i|i[0,10]=='drw-rw-rw-'}.map{|i|i.split(' ',9)[-1]} .each do|file|
-        puts file
-      end
-    rescue Exception => ex
-      puts ex
-    ensure
-      ftp.close
-    end
+  end
+
+  def self.upload_file
+
   end
 
   def self.send_file
@@ -85,66 +88,73 @@ class SendReceive
         objects << (Dict.getDictByCode t.src)
       end
       filename = "#{t.src}_#{Time.new.strftime("%Y%m%d%H%M%S%L")}.yml"
-      File.open("#{$dir}/temp/#{filename}",'w:UTF-8') do|file|
+      File.open("#{$w_dir}/temp/#{filename}",'w:UTF-8') do|file|
         file.puts objects.to_yaml
       end
-      if(Rails.configuration.gab) then
+      if($config.gab) then
         dests = TbTaskDest.find(:all,:conditions=>["tb_id=?",t.tb_id])
         dests.each do|d|
-          FileUtils.cp "#{$dir}/temp/#{filename}","#{$dir}/send/#{d.dest}/#{filename}"
+          FileUtils.cp "#{$w_dir}/temp/#{filename}","#{$w_dir}/send/#{d.dest}/#{filename}"
         end
       else
-        FileUtils.cp "#{$dir}/temp/#{filename}","#{$dir}/send/01000/#{filename}"
+        FileUtils.cp "#{$w_dir}/temp/#{filename}","#{$w_dir}/send/010000/#{filename}"
       end
-      FileUtils.rm "#{$dir}/temp/#{filename}"
+      FileUtils.rm "#{$w_dir}/temp/#{filename}"
       #完成信息打包发送
       t.fmq = '2'
+      t.save
     end
   end
 
   def self.scan_file
-   if(Rails.configuration.gab) then
-     Dir.foreach("#{$dir}/receive") do|d|
+     Dir.foreach("#{$w_dir}/receive") do|d|
         next if (d=="." || d== "..")
-        Dir.foreach("#{$dir}/receive/#{d}") do|file|
+        Dir.foreach("#{$w_dir}/receive/#{d}") do|file|
           next if (file=="." || file== "..")
           	ActiveRecord::Base.transaction do
               begin
-                load_file "#{$dir}/receive/#{d}/#{file}"
+                load_file "#{$w_dir}/receive/#{d}/#{file}"
               rescue Exception => ex
                 raise ActiveRecord::Rollback, ex.message
               end
 						end
         end
      end
-   end
   end
 
+  # @param file [Object]
   def self.load_file file
     return if !File.file?file
     puts "loading #{file}"
     if file[/\.[^\.]+$/] == ".yml" then
       objects = YAML.load_file file
       tbTask = objects.shift
+      puts tbTask.tb_type
       case tbTask.tb_type
-      when 0..4
-        objects.each do|obj|
-          clazz = obj.class
-          begin
-            exists = clazz.find(obj.id)
-            exists.attributes = obj.attributes
-            exists.save
-          rescue ActiveRecord::RecordNotFound
-            x = clazz.new
-            x.initialize_dup(obj)
-            x.id = obj.id
-            x.save
-          rescue Exception =>e
-             logger.error e
-          end
-        end
+        when 0..4
+          puts "load task 0..4"
+          loadTask objects
       end
     end
+  end
+
+  def self.loadTask objects
+      objects.each do|obj|
+        clazz = obj.class
+        begin
+          puts obj.id
+          exists = clazz.find(obj.id)
+          exists.attributes = obj.attributes
+          exists.save
+        rescue ActiveRecord::RecordNotFound
+          x = clazz.new
+          x.initialize_dup(obj)
+          x.id = obj.id
+          x.save
+        rescue Exception =>e
+           logger.error e
+        end
+      end
   end
 
   #打包捺印信息
@@ -186,3 +196,6 @@ class SendReceive
     return objects
   end
 end
+
+
+

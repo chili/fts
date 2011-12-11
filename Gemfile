@@ -9,6 +9,8 @@ gem 'composite_primary_keys'
 gem 'ruby-oci8'
 gem 'activerecord-oracle_enhanced-adapter'
 
+gem 'savon'
+
 
 
 # Gems used only for assets and not required

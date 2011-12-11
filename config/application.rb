@@ -44,11 +44,9 @@ module Fts
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
-
     config.workspace = "d:/temp"
-    config.gab = true
-    config.ftp_username="nmbu"
-    config.ftp_password="nmbu"
-    config.ftp_host="60.247.77.173"
+    config.remote_workspace="d:/temp_remote"
+    config.gab = false
+    config.hostcode="110000"
   end
 end
