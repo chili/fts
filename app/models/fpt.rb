@@ -59,6 +59,61 @@ end
 
 class XczwZdyxx < ActiveRecord::Base
   set_table_name "xczw_zdyxx"
+  set_primary_keys :ajno, :fpno
+end
+
+
+#十指模型-临时
+class TempNyzwIc < ActiveRecord::Base
+  set_table_name "t_nyzw_ic"
+  set_primary_key :ryno
+end
+
+class TempNyzwFp < ActiveRecord::Base
+  set_table_name "t_nyzw_fp"
+  set_primary_keys :ryno, :fpno
+
+end
+
+class TempNyzwTx < ActiveRecord::Base
+  set_table_name "t_nyzw_tx"
+  set_primary_keys :ryno, :fpno
+end
+
+class TempNyzwTzxx < ActiveRecord::Base
+  set_table_name "t_nyzw_tzxx"
+  set_primary_keys :ryno, :fpno
+end
+
+class TempNyzwZdyxx < ActiveRecord::Base
+  set_table_name "t_nyzw_zdyxx"
+  set_primary_keys :ryno, :fpno
+end
+
+#现场模型
+class TempXczwIc < ActiveRecord::Base
+  set_table_name "t_xczw_ic"
+  set_primary_key :ajno
+end
+
+class TempXczwFp < ActiveRecord::Base
+  set_table_name "t_xczw_fp"
+  set_primary_keys :ajno, :fpno
+end
+
+class TempXczwTx < ActiveRecord::Base
+  set_table_name "t_xczw_tx"
+  set_primary_keys :ajno, :fpno
+end
+
+class TempXczwTzxx < ActiveRecord::Base
+  set_table_name "t_xczw_tzxx"
+  set_primary_keys :ajno, :fpno
+end
+
+class TempXczwZdyxx < ActiveRecord::Base
+  set_table_name "t_xczw_zdyxx"
+  set_primary_keys :ajno, :fpno
 end
 
 #任务模型

@@ -5,6 +5,8 @@ load "#{Rails.root}/app/models/send_receive.rb"
 load "#{Rails.root}/app/models/gab/gab_send_receive.rb" if Rails.configuration.gab
 load "#{Rails.root}/app/models/client/client_send_receive.rb" unless Rails.configuration.gab
 load "#{Rails.root}/app/models/fpt.rb"
+load File.dirname(__FILE__) + '/../models/fpt_parser.rb'
+
 class AfisController < ApplicationController
   def index
     #gabsendreceive.init
@@ -63,6 +65,8 @@ class AfisController < ApplicationController
   #param[UserID]
   #param[Password]
   def getXCTask
+    p = FPTParserV4.new
+    p.parse "d:/temp/R5200000000000000000106.FPT"
 
   end
 
