@@ -14,6 +14,7 @@ class FPTParserV4
     raise "文件大小异常" unless size == header.c101
     p_size = to_i fin.read(8)
     p_type = trim fin.read(2)
+    puts "逻辑记录大小:#{p_size},逻辑记录类型#{p_type}"
     case p_type
       when "02"
         parse_nyzw fin
@@ -49,7 +50,7 @@ class FPTParserV4
      header.c120 = trim io.read(4)
      header.c121 = trim io.read(10)
      header.c122 = trim io.read(512)
-     skip = io.read(1)
+     skip = io.readbyte
     rescue
       raise "文件格式不正确"
     end
@@ -61,7 +62,7 @@ class FPTParserV4
       no = io.read(6)
       xtlx     = trim io.read(4)
       ryno     = trim io.read(23)
-      ny,tzxx,zdyxx,tx = nil,nil,nil,nil
+      #ny,tzxx,zdyxx,tx = nil,nil,nil,nil
       begin
         ny = TempNyzwIc.find(ryno)
       rescue ActiveRecord::RecordNotFound
@@ -112,10 +113,12 @@ class FPTParserV4
       image_size = to_i io.read(6)
       io.read(image_size) if image_size > 0
       send_fp_num = to_i io.read(2)
+      i = 0
       begin
         fp_size = to_i io.read(7)
         fp_send_no = trim io.read(2)
-        fpno = "%02d" %(trim io.read(2))
+        fpno = trim io.read(2)
+        fpno = "%02d" %fpno if fpno.size < 2
         begin
           fp = TempNyzwFp.find([ryno,fpno])
         rescue ActiveRecord::RecordNotFound
@@ -163,15 +166,14 @@ class FPTParserV4
             tx = TempNyzwTx.find([ryno, fpno])
           rescue ActiveRecord::RecordNotFound
             tx = TempNyzwTx.new
-            tx.id = [ryno, fpno]
           end
-          puts "******************#{tx.id}"
+          tx.id = [ryno, fpno]
           io.read(txcd)
           tx.save
         end
         fp.save
-        gsfs = io.read(1)
-      end while $FPT_FS.eql?gsfs
+        io.readbyte
+      end while ((i=i+1)<send_fp_num)
     rescue
       puts $!
       raise "捺印指纹格式不正确"
@@ -203,9 +205,10 @@ class FPTV4Header
 end
 
 def trim line
-  #puts "s:#{line},#{line.size}"
+  #puts "s:#{line},size=#{line.size}"
   line.strip! unless line.nil?
-  #puts "e:#{line},#{line.size}"
+  line.force_encoding("GBK")
+  #puts "e:#{line},szie=#{line.size}"
   return line
 end
 
