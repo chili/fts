@@ -180,9 +180,9 @@ class CfgSystem <ActiveRecord::Base
    set_primary_key :code
 end
 
-class Temp <ActiveRecord::Base
-  set_table_name "tt"
-  set_primary_keys :id,:x
+class TaskLog <ActiveRecord::Base
+  set_table_name "task_log"
+  set_primary_key :sn
 end
 
 

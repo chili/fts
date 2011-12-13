@@ -1,10 +1,9 @@
+#encoding:UTF-8
+
 require "fileutils"
 require "net/ftp"
 load "#{Rails.root}/app/models/fpt.rb"
-def logger
-    @logger ||= ::Rails.logger
-    return @logger
-end
+
 #
 #打包发送文件和接受其他省厅的文件
 #
@@ -113,8 +112,12 @@ class SendReceive
           next if (file=="." || file== "..")
           	ActiveRecord::Base.transaction do
               begin
+                puts "加载#{d}报送的#{file}"
                 load_file "#{$w_dir}/receive/#{d}/#{file}"
+                puts "移除已经加载的文件#{d}/#{file}"
+                FileUtils.remove_file  "#{$w_dir}/receive/#{d}/#{file}",true
               rescue Exception => ex
+                puts "加载#{d}报送的#{file}文件异常,#{ex.message}"
                 raise ActiveRecord::Rollback, ex.message
               end
 						end
@@ -150,7 +153,7 @@ class SendReceive
           x.id = obj.id
           x.save
         rescue Exception =>e
-           logger.error e
+          puts e
         end
       end
   end
@@ -192,6 +195,24 @@ class SendReceive
       objects.concat (tx) if !tx.nil?
     end
     return objects
+  end
+
+  def self.add_task_log task_id,message
+    log = TaskLog.new
+    log.id = UUID.new.generate.gsub("-","")
+    log.task_id = task_id
+    log.message = message
+    log.save
+  end
+
+  def self.distribute_task task_type,task_id,dest,fmq="1"
+   raise "任务目的地不可为空" if dest.blank?
+   tb = TbTask.new
+   tb.tb_id = Time.new.to_i
+   tb.
+   dest.split(",").each do|d|
+      tDest = TbTaskDest.new
+   end
   end
 end
 
