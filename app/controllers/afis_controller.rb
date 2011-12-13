@@ -9,6 +9,10 @@ load File.dirname(__FILE__) + '/../models/fpt_parser.rb'
 
 class AfisController < ApplicationController
   def index
+    t = Temp.find("1234566","3")
+    #t.id = ["1234566","3"]
+    t.c1= "999999999999999999999999999"
+    t.save
     #gabsendreceive.init
     #gabsendreceive.remote_init
     #gabsendreceive.down_file

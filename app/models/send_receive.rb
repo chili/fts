@@ -129,7 +129,6 @@ class SendReceive
     if file[/\.[^\.]+$/] == ".yml" then
       objects = YAML.load_file file
       tbTask = objects.shift
-      puts tbTask.tb_type
       case tbTask.tb_type
         when 0..4
           puts "load task 0..4"
@@ -142,7 +141,6 @@ class SendReceive
       objects.each do|obj|
         clazz = obj.class
         begin
-          puts obj.id
           exists = clazz.find(obj.id)
           exists.attributes = obj.attributes
           exists.save

@@ -8,6 +8,7 @@ gem 'rails', '3.1.3'
 gem 'composite_primary_keys'
 gem 'ruby-oci8', '~> 2.0.6'
 gem 'activerecord-oracle_enhanced-adapter', '~> 1.4.0'
+gem 'rufus-scheduler'
 
 
 gem 'savon'

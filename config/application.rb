@@ -46,7 +46,7 @@ module Fts
     config.assets.version = '1.0'
     config.workspace = "d:/temp"
     config.remote_workspace="d:/temp_remote"
-    config.gab = false
-    config.hostcode="110000"
+    config.gab = true
+    config.hostcode="010000"
   end
 end

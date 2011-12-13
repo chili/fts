@@ -9,6 +9,19 @@
 require 'rubygems'
 require 'composite_primary_keys'
 
+module ActiveRecord
+  class Base
+    def self.composite_where_clause id
+      pks = ""
+      primary_key.each_index  {|i|
+        pk = primary_key[i]
+        pks <<  "#{quoted_table_name()}.#{pk.to_s}='"<<id[i]<<"'"
+        pks << " and " if i<(primary_key.size-1)
+      }
+      return pks
+    end
+  end
+end
 #十指模型
 class NyzwIc < ActiveRecord::Base
   set_table_name "nyzw_ic"
@@ -166,6 +179,14 @@ class CfgSystem <ActiveRecord::Base
    set_table_name "cfg_system"
    set_primary_key :code
 end
+
+class Temp <ActiveRecord::Base
+  set_table_name "tt"
+  set_primary_keys :id,:x
+end
+
+
+
 
 
 
